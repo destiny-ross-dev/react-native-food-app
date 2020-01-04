@@ -1,35 +1,21 @@
-import React, { useState, useEffect } from "react";
-import { View, StyleSheet, Text } from "react-native";
+import React, { useState } from "react";
+import { View, StyleSheet, Text, ScrollView } from "react-native";
 import SearchBar from "../components/SearchBar";
-import yelp from "../api/yelp";
+import useResults from "../hooks/useResults";
+import ResultsList from "../components/ResultsList";
 
 const SearchScreen = () => {
   const [term, setTerm] = useState("");
-  const [results, setResults] = useState([]);
-  const [err, setErr] = useState(false);
+  const [searchApi, results, err] = useResults();
 
-  useEffect(() => {
-    searchApi();
-  }, []);
-
-  const searchApi = async searchTerm => {
-    console.log("searched");
-    try {
-      const response = await yelp.get("/search", {
-        params: {
-          limit: 50,
-          term: searchTerm,
-          location: "Akron, OH"
-        }
-      });
-      setResults(response.data.businesses);
-    } catch (e) {
-      setErr(true);
-    }
+  const filterResultsByPrice = price => {
+    return results.filter(result => {
+      return result.price === price;
+    });
   };
 
   return (
-    <View style={styles.appContainer}>
+    <>
       <SearchBar
         term={term}
         onTermChange={setTerm}
@@ -38,18 +24,33 @@ const SearchScreen = () => {
       {err && (
         <Text style={styles.errorStyles}>Something went wrong. Try again!</Text>
       )}
-      <Text>We have found {results.length} results</Text>
-    </View>
+      <ScrollView horizontal={false}>
+        <Text style={styles.resultsCountStyle}>
+          Showing {results.length} results
+        </Text>
+        <ResultsList
+          results={filterResultsByPrice("$")}
+          title="Cost Effective"
+        />
+        <ResultsList
+          results={filterResultsByPrice("$$")}
+          title="A Bit Pricier"
+        />
+        <ResultsList
+          results={filterResultsByPrice("$$$")}
+          title="Big Spender"
+        />
+      </ScrollView>
+    </>
   );
 };
 
 const styles = StyleSheet.create({
-  appContainer: {
-    backgroundColor: "#FFFFFF",
-    flexGrow: 1
-  },
   errorStyles: {
     color: "red"
+  },
+  resultsCountStyle: {
+    marginLeft: 15
   }
 });
 
