@@ -15,7 +15,8 @@ const ResultsDetail = ({ result }) => {
 
 const styles = StyleSheet.create({
   container: {
-    marginLeft: 15
+    marginLeft: 15,
+    flex: 1
   },
   imageStyle: {
     width: 250,
